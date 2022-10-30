@@ -2,11 +2,5 @@ rootProject.name = '2022-09-otus-java-antonov'
 
 include 'hw01-gradle'
 
-include 'L02-gradle2'
-include 'L02-gradle2-libApi'
-include 'L02-gradle2-libApiUse'
-include 'L03-qa'
 include 'L04-generics'
-
-include 'L05-collections'
 include 'L06-annotations'
