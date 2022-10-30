@@ -31,9 +31,13 @@ public class Runner {
         var afterMethods = new ArrayList<Method>();
 
         for (Method method : declaredMethods) {
-            if (method.isAnnotationPresent(Before.class)) beforeMethods.add(method);
-            else if (method.isAnnotationPresent(Test.class)) testMethods.add(method);
-            else if (method.isAnnotationPresent(After.class)) afterMethods.add(method);
+            if (method.isAnnotationPresent(Before.class)) {
+                beforeMethods.add(method);
+            } else if (method.isAnnotationPresent(Test.class)) {
+                testMethods.add(method);
+            } else if (method.isAnnotationPresent(After.class)) {
+                afterMethods.add(method);
+            }
         }
 
         testsCount = testMethods.size();
