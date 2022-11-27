@@ -1,38 +1,40 @@
-import annotation.Log;
+package ru.otus.homework;
+
+import ru.otus.homework.annotation.Log;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class Ioc {
 
-    public static TestLoggingInterface createProxy() {
-        DemoInvocationHandler handler = new DemoInvocationHandler(new TestLogging());
+    public static TestLoggingInterface createProxy(TestLoggingInterface instance) {
+        DemoInvocationHandler handler = new DemoInvocationHandler(instance);
         return (TestLoggingInterface) Proxy.newProxyInstance(Ioc.class.getClassLoader(),
                 new Class<?>[]{TestLoggingInterface.class}, handler);
     }
 
 
     private static class DemoInvocationHandler implements InvocationHandler {
-        private final TestLogging testLogging;
-        private final Map<String, Method> methods;
+        private final TestLoggingInterface testLogging;
+        private final Set<String> methods;
 
-        DemoInvocationHandler(TestLogging testLogging) {
+        DemoInvocationHandler(TestLoggingInterface testLogging) {
             this.testLogging = testLogging;
             this.methods = getMethodsWithLogAnnotation(testLogging);
         }
 
-        private Map<String, Method> getMethodsWithLogAnnotation(TestLoggingInterface testLogging) {
-            var methodsWithAnnotation = new HashMap<String, Method>();
+        private Set<String> getMethodsWithLogAnnotation(TestLoggingInterface testLogging) {
+            var methodsWithAnnotation = new HashSet<String>();
             Class<? extends TestLoggingInterface> testLoggingClass = testLogging.getClass();
             Method[] testLoggingMethods = testLoggingClass.getMethods();
             for (Method method : testLoggingMethods) {
                 if (method.isAnnotationPresent(Log.class)) {
-                    methodsWithAnnotation.put(getKey(method), method);
+                    methodsWithAnnotation.add(getKey(method));
                 }
             }
             return methodsWithAnnotation;
@@ -40,7 +42,7 @@ public class Ioc {
 
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-            if (methods.containsKey(getKey(method))) {
+            if (methods.contains(getKey(method))) {
                 printLog(method, args);
             }
             return method.invoke(testLogging, args);
@@ -51,10 +53,14 @@ public class Ioc {
         }
 
         private void printLog(Method method, Object[] args) {
-            String params = Arrays.stream(args)
-                    .map(String::valueOf)
-                    .collect(Collectors.joining(", "));
-
+            String params;
+            if (args != null) {
+                params = Arrays.stream(args)
+                        .map(String::valueOf)
+                        .collect(Collectors.joining(", "));
+            } else {
+                params = "method without params";
+            }
             System.out.printf("executed method: %s. param: %s\n", method.getName(), params);
         }
 
