@@ -8,8 +8,6 @@ import java.util.Map;
 
 public interface BanknotesStorage {
 
-//    List<Banknote> download(Denomination denomination, List<Banknote> banknotes);
-
     void download(Map<Denomination, List<Banknote>> banknotes);
 
     List<Banknote> withdraw(Map<Denomination, Integer> requiredCountBanknotes);
