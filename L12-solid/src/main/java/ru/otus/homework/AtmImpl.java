@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class AtmImpl implements Atm {
+    private static final int MINIMAL_DENOMINATION_BANKNOTES = 100;
     private static final Logger logger = LoggerFactory.getLogger(AtmImpl.class);
 
     private final BanknotesStorage banknotesStorage;
@@ -48,7 +49,7 @@ public class AtmImpl implements Atm {
     }
 
     private void validateRequestedAmount(int amount) {
-        if (amount % 100 != 0) {
+        if (amount % MINIMAL_DENOMINATION_BANKNOTES != 0) {
             logger.error("Minimal available denomination - RUB100. Requested amount: [{}]", amount);
             throw new IllegalArgumentException();
         } else if (amount > getTotalBalance()) {
