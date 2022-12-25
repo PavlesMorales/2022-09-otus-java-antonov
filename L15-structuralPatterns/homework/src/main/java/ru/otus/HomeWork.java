@@ -1,5 +1,14 @@
 package ru.otus;
 
+import ru.otus.handler.ComplexProcessor;
+import ru.otus.listener.homework.HistoryListener;
+import ru.otus.model.Message;
+import ru.otus.processor.homework.DateTimeProviderImpl;
+import ru.otus.processor.homework.EvenSecondExceptionProcessor;
+import ru.otus.processor.homework.SwapFieldProcessor;
+
+import java.util.List;
+
 public class HomeWork {
 
     /*
@@ -20,5 +29,24 @@ public class HomeWork {
            по аналогии с Demo.class
            из элеменов "to do" создать new ComplexProcessor и обработать сообщение
          */
+
+        var processors = List.of(new SwapFieldProcessor(),
+                new EvenSecondExceptionProcessor(new DateTimeProviderImpl()));
+
+        var complexProcessor = new ComplexProcessor(processors, ex -> System.out.println("[ERROR] Even seconds " + ex.getMessage()));
+        var historyListener = new HistoryListener();
+        complexProcessor.addListener(historyListener);
+
+        var message = new Message.Builder(1L)
+                .field11("field11")
+                .field12("field12")
+                .build();
+
+        Message result = complexProcessor.handle(message);
+        System.out.println("field11: " + result.getField11());
+        System.out.println("field12: " + result.getField12());
+
+        complexProcessor.removeListener(historyListener);
+
     }
 }
