@@ -17,9 +17,9 @@ public class FileSerializer implements Serializer {
     public void serialize(Map<String, Double> data) {
         //формирует результирующий json и сохраняет его в файл
 
-        try (FileWriter fos = new FileWriter(fileName)) {
-            String json = new Gson().toJson(data);
-            fos.write(json);
+        try (var fileWriter = new FileWriter(fileName)) {
+            var json = new Gson().toJson(data);
+            fileWriter.write(json);
         } catch (Exception e) {
             throw new FileProcessException(e);
         }

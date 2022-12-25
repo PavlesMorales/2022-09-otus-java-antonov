@@ -22,7 +22,7 @@ public class ResourcesFileLoader implements Loader {
                 System.err.println("File not found");
                 throw new FileProcessException("File not found");
             }
-            byte[] bytes = resourceAsStream.readAllBytes();
+            var bytes = resourceAsStream.readAllBytes();
             if (bytes.length == 0) {
                 System.err.println("Empty file");
                 throw new FileProcessException("Empty file");
