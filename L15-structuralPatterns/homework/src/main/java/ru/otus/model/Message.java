@@ -254,6 +254,10 @@ public class Message {
         }
     }
 
+    @Override
+    public Message clone(){
+        return toBuilder().build();
+    }
     private static ObjectForMessage copyObjectForMessage(ObjectForMessage objectForMessage) {
         var cloneObjectForMessage = new ObjectForMessage();
         List<String> data = objectForMessage != null && objectForMessage.getData() != null
