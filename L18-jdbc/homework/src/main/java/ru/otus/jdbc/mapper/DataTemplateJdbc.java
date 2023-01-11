@@ -19,12 +19,12 @@ public class DataTemplateJdbc<T> implements DataTemplate<T> {
     private static final Logger logger = LoggerFactory.getLogger(DataTemplateJdbc.class);
     private final DbExecutor dbExecutor;
     private final EntitySQLMetaData entitySQLMetaData;
-    private final ReflectionUtils<T> reflectionUtils;
+    private final JdbcReflectionUtils<T> jdbcReflectionUtils;
 
-    public DataTemplateJdbc(DbExecutor dbExecutor, EntitySQLMetaData entitySQLMetaData, ReflectionUtils<T> reflectionUtils) {
+    public DataTemplateJdbc(DbExecutor dbExecutor, EntitySQLMetaData entitySQLMetaData, JdbcReflectionUtils<T> jdbcReflectionUtils) {
         this.dbExecutor = dbExecutor;
         this.entitySQLMetaData = entitySQLMetaData;
-        this.reflectionUtils = reflectionUtils;
+        this.jdbcReflectionUtils = jdbcReflectionUtils;
     }
 
     @Override
@@ -35,7 +35,7 @@ public class DataTemplateJdbc<T> implements DataTemplate<T> {
         return dbExecutor.executeSelect(connection,
                 query,
                 List.of(id),
-                reflectionUtils::createObject);
+                jdbcReflectionUtils::createObject);
     }
 
     @Override
@@ -48,14 +48,14 @@ public class DataTemplateJdbc<T> implements DataTemplate<T> {
                         connection,
                         query,
                         Collections.emptyList(),
-                        reflectionUtils::getAllObjects)
+                        jdbcReflectionUtils::getAllObjects)
                 .orElse(new ArrayList<>());
 
     }
 
     @Override
     public long insert(Connection connection, T client) {
-        List<Object> values = reflectionUtils.getValuesWithoutId(client);
+        List<Object> values = jdbcReflectionUtils.getValuesWithoutId(client);
         String query = entitySQLMetaData.getInsertSql();
         logger.debug("SQL: [{}]", query);
 
@@ -67,7 +67,7 @@ public class DataTemplateJdbc<T> implements DataTemplate<T> {
 
     @Override
     public void update(Connection connection, T client) {
-        List<Object> values = reflectionUtils.getAllValues(client);
+        List<Object> values = jdbcReflectionUtils.getAllValues(client);
         String query = entitySQLMetaData.getUpdateSql();
         logger.debug("SQL: [{}]", query);
 

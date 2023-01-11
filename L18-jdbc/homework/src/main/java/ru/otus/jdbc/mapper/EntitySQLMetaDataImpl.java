@@ -5,10 +5,10 @@ import java.util.List;
 import java.util.StringJoiner;
 
 public class EntitySQLMetaDataImpl<T> implements EntitySQLMetaData {
-    private static final String INSERT_TEMPLATE = "INSERT INTO %s (%s) VALUES (%s)";
-    private static final String UPDATE_TEMPLATE = "UPDATE %s SET %s WHERE %s = ?";
-    private static final String SELECT_BY_ID_TEMPLATE = "SELECT * FROM %s WHERE %s = ?";
-    private static final String SELECT_ALL_FIELDS_TEMPLATE = "SELECT %s FROM %s";
+    private String selectAllSql;
+    private String selectById;
+    private String insertSql;
+    private String updateSql;
     private final EntityClassMetaData<T> entityClassMetaData;
 
     public EntitySQLMetaDataImpl(EntityClassMetaData<T> entityClassMetaData) {
@@ -17,56 +17,70 @@ public class EntitySQLMetaDataImpl<T> implements EntitySQLMetaData {
 
     @Override
     public String getSelectAllSql() {
-        var fieldsDelimiter = new StringJoiner(", ");
-        List<Field> fieldsWithoutId = entityClassMetaData.getAllFields();
-        for (Field field : fieldsWithoutId) {
-            fieldsDelimiter.add(field.getName());
+        if (selectAllSql == null) {
+            var fieldsDelimiter = new StringJoiner(", ");
+            List<Field> fieldsWithoutId = entityClassMetaData.getAllFields();
+
+            for (Field field : fieldsWithoutId) {
+                fieldsDelimiter.add(field.getName());
+            }
+
+            selectAllSql = String.format(
+                    "SELECT %s FROM %s",
+                    fieldsDelimiter,
+                    entityClassMetaData.getName());
         }
-        return String.format(
-                SELECT_ALL_FIELDS_TEMPLATE,
-                fieldsDelimiter,
-                entityClassMetaData.getName());
+        return selectAllSql;
     }
 
     @Override
     public String getSelectByIdSql() {
-
-
-        return String.format(
-                SELECT_BY_ID_TEMPLATE,
-                entityClassMetaData.getName(),
-                entityClassMetaData.getIdField().getName());
+        if (selectById == null) {
+            selectById = String.format(
+                    "SELECT * FROM %s WHERE %s = ?",
+                    entityClassMetaData.getName(),
+                    entityClassMetaData.getIdField().getName());
+        }
+        return selectById;
     }
 
     @Override
     public String getInsertSql() {
-        var fieldsDelimiter = new StringJoiner(", ");
-        var valuesDelimiter = new StringJoiner(", ");
-        List<Field> fieldsWithoutId = entityClassMetaData.getFieldsWithoutId();
+        if (insertSql == null) {
+            var fieldsDelimiter = new StringJoiner(", ");
+            var valuesDelimiter = new StringJoiner(", ");
+            List<Field> fieldsWithoutId = entityClassMetaData.getFieldsWithoutId();
 
-        for (Field field : fieldsWithoutId) {
-            fieldsDelimiter.add(field.getName());
-            valuesDelimiter.add("?");
+            for (Field field : fieldsWithoutId) {
+                fieldsDelimiter.add(field.getName());
+                valuesDelimiter.add("?");
+            }
+
+            insertSql = String.format(
+                    "INSERT INTO %s (%s) VALUES (%s)",
+                    entityClassMetaData.getName(),
+                    fieldsDelimiter,
+                    valuesDelimiter);
         }
-
-        return String.format(INSERT_TEMPLATE,
-                entityClassMetaData.getName(),
-                fieldsDelimiter,
-                valuesDelimiter);
+        return insertSql;
     }
 
     @Override
     public String getUpdateSql() {
-        var fieldsDelimiter = new StringJoiner(", ");
-        List<Field> fieldsWithoutId = entityClassMetaData.getFieldsWithoutId();
-        for (Field field : fieldsWithoutId) {
-            fieldsDelimiter.add(field.getName() + "=?");
+        if (updateSql == null) {
+            var fieldsDelimiter = new StringJoiner(", ");
+            List<Field> fieldsWithoutId = entityClassMetaData.getFieldsWithoutId();
+
+            for (Field field : fieldsWithoutId) {
+                fieldsDelimiter.add(field.getName() + "=?");
+            }
+
+            updateSql = String.format(
+                    "UPDATE %s SET %s WHERE %s = ?",
+                    entityClassMetaData.getName(),
+                    fieldsDelimiter,
+                    entityClassMetaData.getIdField().getName());
         }
-
-        return String.format(UPDATE_TEMPLATE,
-                entityClassMetaData.getName(),
-                fieldsDelimiter,
-                entityClassMetaData.getIdField().getName());
-
+        return updateSql;
     }
 }

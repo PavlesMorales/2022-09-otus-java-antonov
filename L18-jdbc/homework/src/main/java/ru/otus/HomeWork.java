@@ -31,7 +31,7 @@ public class HomeWork {
 // Работа с клиентом
         EntityClassMetaData<Client> entityClassMetaDataClient = new EntityClassMetaDataImpl<>(Client.class);
         EntitySQLMetaData entitySQLMetaDataClient = new EntitySQLMetaDataImpl<>(entityClassMetaDataClient);
-        ReflectionUtilsImpl<Client> reflectionUtilsClient = new ReflectionUtilsImpl<>(entityClassMetaDataClient);
+        JdbcReflectionUtilsImpl<Client> reflectionUtilsClient = new JdbcReflectionUtilsImpl<>(entityClassMetaDataClient);
         var dataTemplateClient = new DataTemplateJdbc<>(dbExecutor, entitySQLMetaDataClient, reflectionUtilsClient); //реализация DataTemplate, универсальная
 
 // Код дальше должен остаться
@@ -51,9 +51,9 @@ public class HomeWork {
 // Сделайте тоже самое с классом Manager (для него надо сделать свою таблицу)
 
         EntityClassMetaData<Manager> entityClassMetaDataManager = new EntityClassMetaDataImpl<>(Manager.class);
-        ReflectionUtils<Manager> reflectionUtilsManager = new ReflectionUtilsImpl<>(entityClassMetaDataManager);
+        JdbcReflectionUtils<Manager> jdbcReflectionUtilsManager = new JdbcReflectionUtilsImpl<>(entityClassMetaDataManager);
         EntitySQLMetaData entitySQLMetaDataManager = new EntitySQLMetaDataImpl<>(entityClassMetaDataManager);
-        var dataTemplateManager = new DataTemplateJdbc<>(dbExecutor, entitySQLMetaDataManager, reflectionUtilsManager);
+        var dataTemplateManager = new DataTemplateJdbc<>(dbExecutor, entitySQLMetaDataManager, jdbcReflectionUtilsManager);
 
         var dbServiceManager = new DbServiceManagerImpl(transactionRunner, dataTemplateManager);
         dbServiceManager.saveManager(new Manager("ManagerFirst"));

@@ -10,11 +10,11 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ReflectionUtilsImpl<T> implements ReflectionUtils<T> {
-    private static final Logger logger = LoggerFactory.getLogger(ReflectionUtilsImpl.class);
+public class JdbcReflectionUtilsImpl<T> implements JdbcReflectionUtils<T> {
+    private static final Logger logger = LoggerFactory.getLogger(JdbcReflectionUtilsImpl.class);
     private final EntityClassMetaData<T> entityClassMetaData;
 
-    public ReflectionUtilsImpl(EntityClassMetaData<T> entityClassMetaData) {
+    public JdbcReflectionUtilsImpl(EntityClassMetaData<T> entityClassMetaData) {
         this.entityClassMetaData = entityClassMetaData;
     }
 
