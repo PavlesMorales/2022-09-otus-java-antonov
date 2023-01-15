@@ -29,8 +29,7 @@ public class Client implements Cloneable {
     @JoinColumn(name = "address_id")
     private Address address;
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name = "client_id", updatable = false)
+    @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     @Fetch(FetchMode.SUBSELECT)
     private List<Phone> phones;
 
@@ -56,7 +55,25 @@ public class Client implements Cloneable {
 
     @Override
     public Client clone() {
-        return new Client(this.id, this.name, this.address, this.phones);
+        var cloneClient = new Client(this.id, this.name);
+
+        var cloneAddress = this.address != null ?
+                new Address(this.address.getId(), this.address.getClientAddress()) : null;
+
+        cloneClient.setAddress(cloneAddress);
+
+        List<Phone> clonePhones;
+        if (this.phones != null) {
+            clonePhones = this.phones
+                    .stream()
+                    .map(phone -> new Phone(phone.getId(), phone.getNumber(), cloneClient))
+                    .toList();
+        } else {
+            clonePhones = null;
+        }
+
+        cloneClient.setPhones(clonePhones);
+        return cloneClient;
     }
 
     @Override
