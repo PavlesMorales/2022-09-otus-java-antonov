@@ -7,6 +7,8 @@ import org.hibernate.stat.Statistics;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import ru.otus.cachehw.HwListener;
+import ru.otus.cachehw.MyCache;
 import ru.otus.jpqlhw.core.repository.DataTemplateHibernate;
 import ru.otus.jpqlhw.core.repository.HibernateUtils;
 import ru.otus.jpqlhw.core.sessionmanager.TransactionManagerHibernate;
@@ -15,6 +17,7 @@ import ru.otus.jpqlhw.crm.model.Address;
 import ru.otus.jpqlhw.crm.model.Client;
 import ru.otus.jpqlhw.crm.model.Phone;
 import ru.otus.jpqlhw.crm.service.DBServiceClient;
+import ru.otus.jpqlhw.crm.service.DBServiceClientCacheImpl;
 import ru.otus.jpqlhw.crm.service.DbServiceClientImpl;
 
 
@@ -23,6 +26,7 @@ public abstract class AbstractHibernateTest {
     protected TransactionManagerHibernate transactionManager;
     protected DataTemplateHibernate<Client> clientTemplate;
     protected DBServiceClient dbServiceClient;
+    protected DBServiceClient dbServiceClientCached;
 
     private static TestContainersConfig.CustomPostgreSQLContainer CONTAINER;
 
@@ -56,6 +60,18 @@ public abstract class AbstractHibernateTest {
         transactionManager = new TransactionManagerHibernate(sessionFactory);
         clientTemplate = new DataTemplateHibernate<>(Client.class);
         dbServiceClient = new DbServiceClientImpl(transactionManager, clientTemplate);
+
+        MyCache<Long, Client> cache = new MyCache<>();
+        HwListener<Long, Client> listener = new HwListener<Long, Client>() {
+            @Override
+            public void notify(Long key, Client value, String action) {
+                System.out.printf("key: {%s}, value: {%s}, action: {%s} \n", key, value, action);
+            }
+        };
+
+        cache.addListener(listener);
+        dbServiceClientCached = new DBServiceClientCacheImpl(transactionManager, clientTemplate, cache);
+
     }
 
     protected EntityStatistics getUsageStatistics() {
