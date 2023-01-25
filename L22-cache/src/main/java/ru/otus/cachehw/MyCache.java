@@ -1,12 +1,15 @@
 package ru.otus.cachehw;
 
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
+@Slf4j
 public class MyCache<K, V> implements HwCache<K, V> {
 
     private final Map<K, V> weakHashMap = new WeakHashMap<>();
@@ -50,7 +53,11 @@ public class MyCache<K, V> implements HwCache<K, V> {
         for (var softListener : listeners) {
             var kvHwListener = softListener.get();
             if (kvHwListener != null) {
-                kvHwListener.notify(key, value, notification);
+                try {
+                    kvHwListener.notify(key, value, notification);
+                } catch (Exception e) {
+                    log.error("Error notify listener: ", e);
+                }
             } else {
                 listeners.remove(softListener);
             }
