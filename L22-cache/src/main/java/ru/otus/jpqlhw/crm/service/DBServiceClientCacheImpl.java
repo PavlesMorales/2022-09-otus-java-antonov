@@ -12,11 +12,11 @@ import java.util.Optional;
 
 public class DBServiceClientCacheImpl implements DBServiceClient {
     private static final Logger log = LoggerFactory.getLogger(DBServiceClientCacheImpl.class);
-    private final HwCache<Long, Client> cache;
+    private final HwCache<String, Client> cache;
     private final DataTemplate<Client> clientDataTemplate;
     private final TransactionManager transactionManager;
 
-    public DBServiceClientCacheImpl(TransactionManager transactionManager, DataTemplate<Client> clientDataTemplate, HwCache<Long, Client> cache) {
+    public DBServiceClientCacheImpl(TransactionManager transactionManager, DataTemplate<Client> clientDataTemplate, HwCache<String, Client> cache) {
         this.transactionManager = transactionManager;
         this.clientDataTemplate = clientDataTemplate;
         this.cache = cache;
@@ -33,21 +33,21 @@ public class DBServiceClientCacheImpl implements DBServiceClient {
                 clientDataTemplate.update(session, clonedClient);
                 log.info("updated client: {}", clonedClient);
             }
-            cache.put(clonedClient.getId(), clonedClient.clone());
+            cache.put(String.valueOf(clonedClient.getId()), clonedClient.clone());
             return clonedClient;
         });
     }
 
     @Override
     public Optional<Client> getClient(long id) {
-        var cachedClient = cache.get(id);
+        var cachedClient = cache.get(String.valueOf(id));
         if (cachedClient != null) {
             return Optional.of(cachedClient.clone());
         } else {
             return transactionManager.doInReadOnlyTransaction(session -> {
                 var clientOptional = clientDataTemplate.findById(session, id);
                 log.info("client: {}", clientOptional);
-                clientOptional.ifPresent(client -> cache.put(id, client.clone()));
+                clientOptional.ifPresent(client -> cache.put(String.valueOf(id), client.clone()));
                 return clientOptional;
             });
         }
@@ -58,7 +58,7 @@ public class DBServiceClientCacheImpl implements DBServiceClient {
         return transactionManager.doInReadOnlyTransaction(session -> {
             var clientList = clientDataTemplate.findAll(session);
             log.info("clientList:{}", clientList);
-            clientList.forEach(client -> cache.put(client.getId(), client.clone()));
+            clientList.forEach(client -> cache.put(String.valueOf(client.getId()), client.clone()));
             return clientList;
         });
     }

@@ -61,10 +61,10 @@ public abstract class AbstractHibernateTest {
         clientTemplate = new DataTemplateHibernate<>(Client.class);
         dbServiceClient = new DbServiceClientImpl(transactionManager, clientTemplate);
 
-        MyCache<Long, Client> cache = new MyCache<>();
-        HwListener<Long, Client> listener = new HwListener<Long, Client>() {
+        MyCache<String, Client> cache = new MyCache<>();
+        HwListener<String, Client> listener = new HwListener<String, Client>() {
             @Override
-            public void notify(Long key, Client value, String action) {
+            public void notify(String key, Client value, String action) {
                 System.out.printf("key: {%s}, value: {%s}, action: {%s} \n", key, value, action);
             }
         };
