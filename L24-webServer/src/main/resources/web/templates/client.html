@@ -1,0 +1,39 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<body>
+
+
+<h2>Страница администратора</h2>
+
+<h4>Список всех клиентов</h4>
+<table>
+    <thead>
+    <tr>
+        <td style="width: 50px">Id</td>
+        <td style="width: 250px">Имя</td>
+        <td style="width: 250px">Адрес</td>
+        <td style="width: 350px">Телефоны</td>
+    </tr>
+    </thead>
+    <#list clients>
+    <tbody>
+    <#items as client>
+    <tr>
+        <td>${client.id}</td>
+        <td>${client.name}</td>
+        <#if client.address??>
+        <td>${client.address.clientAddress}</td>
+        </#if>
+        <td>${client.phones?map(phone -> phone.number)?join(", ")}</td>
+    </tr>
+    </#items>
+    </tbody>
+    </#list>
+</table>
+
+<h4>Создать нового клиента</h4>
+<a href="create">Перейти на страницу создания клиентов</a>
+
+
+</body>
+</html>
