@@ -1,0 +1,42 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Создать пользователя</title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+    <link rel="stylesheet" type="text/css" href="/form.css">
+</head>
+
+<body>
+
+
+<h2>Страница администратора</h2>
+
+<h3>Создание пользователя</h3>
+
+<h3>Вернуться на страницу клиентов</h3>
+<a href="client">Перейти на страницу информации о пользователях</a>
+
+<form action="create" method="post">
+    <ul class="form-style-1">
+        <li>
+            <label for="name">Имя</label>
+            <input type="text" id="name" name="name" class="field-long" value="${name}">
+        </li>
+
+        <li>
+            <label for="address">Адрес</label>
+            <input type="text" id="address" name="address" class="field-long" value="${address}">
+        </li>
+
+        <li>
+            <label for="phones">Телефон</label>
+            <input type="text" id="phones" name="phones" class="field-long" value="${phones}">
+            <h4>если телефонов несколько, перечислите их через запятую</h4>
+        </li>
+
+        <li>
+            <input type="submit" value="Создать">
+        </li>
+    </ul>
+</form>
+</body>
+</html>
