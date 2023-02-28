@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta lang="ru" charset="UTF-8">
+    <title>Клиенты</title>
+    <style>
+        table {
+            border-top: 3px solid grey;
+        }
+
+        td {
+            border-bottom: 1px solid grey;
+        }
+
+        th, td {
+            padding: 10px 15px;
+            margin: 1px;
+        }
+
+        .table-client {
+            caption-side: bottom;
+            text-align: right;
+            padding: 10px 0;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+
+<script>
+    async function getAllClients() {
+        let response = await fetch("api/client/")
+        let data = await response.json()
+
+        document.getElementById('table-row').innerHTML = `<tbody id="table-row"></tbody>`
+        data.forEach(client => clientToHtml(client))
+    }
+
+    window.addEventListener('DOMContentLoaded', getAllClients)
+
+    function clientToHtml(client) {
+        let clientList = document.getElementById('table-row');
+        let phones = client.phones;
+        let numbers = phones.map(phone => phone.number);
+
+        clientList.insertAdjacentHTML('beforeend',
+            `<tr>
+                <td>${client.firstName}</td>
+                <td>${client.lastName}</td>
+                <td>${client.address}</td>
+                <td>
+                    <ol id ="numbers${client.id}">
+                    </ol>
+                </td>
+                <td>
+                    <button onclick="updateClientHtml(${client.id})">Обновить данные клиента</button>
+                </td>
+                <td>
+                    <button onclick="addPhoneHtml(${client.id})">Добавить номер телефона клиента</button>
+                </td>
+                <td>
+                    <button onclick="deleteClient(${client.id})">Удалить клиента</button>
+                </td>
+                </tr>`);
+        let elementById = document.getElementById('numbers' + client.id);
+
+        numbers.forEach(phone => {
+            elementById.insertAdjacentHTML('beforeend', `
+            <li>${phone}</li>
+            `)
+        })
+
+    }
+
+    function createClientHtml() {
+        document.getElementById('clientDataContainer').innerHTML = '<pre id="clientDataContainer"></pre>';
+        document.getElementById("createClientDiv").innerHTML = '<pre id="createClient"></pre>'
+        let elementById = document.getElementById("createClient");
+        elementById.insertAdjacentHTML('beforebegin', `
+        <div xmlns="http://www.w3.org/1999/html">
+            <h3>Создать клиента</h3>
+            <div>
+                <label for="clientIdFirstName">Имя клиента</label>
+                <input type="text" id="clientIdFirstName" value="Ivan" placeholder="Введите имя клиента">
+            </div>
+            <div>
+                <label for="clientIdLastName">Фамилия клиента</label>
+                <input type="text" id="clientIdLastName" value="Ivanov" placeholder="Введите имя клиента">
+            </div>
+            <div>
+                <label for="addressIdStreet">Адрес клиента</label>
+                <input type="text" id="addressIdStreet" value="Moscow" placeholder="Введите адрес клиента">
+            </div>
+            <div id="phoneHtmlForm">
+                <div id="phonesIdCreate">
+                    <label for="phonesIdPhoneList">Список тел номеров</label>
+                    <input type="text" id="phonesIdPhoneList" value="333-338"
+                    placeholder="Введите номера телефона">
+                </div>
+                <button onclick="addFormForPhone()">Добавить еще один номер телефона</button>
+            </div>
+            <button onclick="createClient()">Создать</button>
+        </div>
+        `);
+    }
+
+    function addFormForPhone() {
+        let elementById = document.getElementById("phonesIdPhoneList");
+        elementById.insertAdjacentHTML("afterend", `
+            <input type="text" id="phonesIdPhoneList" value="555-555"
+                placeholder="Введите номера телефона">
+        `)
+    }
+
+    function createClient() {
+        const clientIdFirstNameTextBox = document.getElementById('clientIdFirstName');
+        const firstName = clientIdFirstNameTextBox.value;
+
+        const clientIdLastNameTextBox = document.getElementById('clientIdLastName');
+        const lastName = clientIdLastNameTextBox.value;
+
+        const addressIdStreetTextBox = document.getElementById('addressIdStreet');
+        const address = addressIdStreetTextBox.value;
+
+        let elementById = document.getElementById("phonesIdCreate");
+        const phones = [];
+        for (const child of elementById.children) {
+            let value = child.defaultValue
+            if (value != null) {
+                phones.push(new Phone(null, value, null))
+            }
+        }
+        document.getElementById("createClientDiv").innerHTML = '<pre id="createClient"></pre>'
+        fetch('api/client/', {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                firstName: firstName,
+                lastName: lastName,
+                address: address,
+                phones: phones
+            })
+        })
+            .then(response => response.json())
+            .then(client => printInfo('Клиент создан: ' + JSON.stringify(client, null, 4)))
+            .then(() => getAllClients())
+
+    }
+
+    function deleteClient(id) {
+        const clientDataContainer = document.getElementById('clientDataContainer');
+        let url = 'api/client/' + id
+        fetch(url, {
+            method: 'DELETE',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+        })
+            .then(response => response.json())
+            .then(id => clientDataContainer.innerHTML = 'Клиент удален: ' + id)
+            .then(() => getAllClients());
+    }
+
+    async function updateClientHtml(id) {
+        let response = await fetch("api/client/" + id)
+        let client = await response.json()
+
+        document.getElementById('clientDataContainer').innerHTML = '<pre id="clientDataContainer"></pre>';
+        document.getElementById("updateClientDiv").innerHTML = '<pre id="updateClient"></pre>'
+        let elementById = document.getElementById("updateClient");
+
+        elementById.insertAdjacentHTML('beforebegin', `
+        <div id="updateClientDiv"><p>Обновить клиента</p>
+            <div>
+            Имя клиента
+            <input type="text" id="updateClientIdFirstName" value=${client.firstName} placeholder="Введите имя клиента">
+            </div>
+            <div>
+            Фамилия клиента
+            <input type="text" id="updateClientIdLastName" value=${client.lastName} placeholder="Введите имя клиента">
+            </div>
+            <div>
+            Адрес клиента
+            <input type="text" id="updateClientAddressIdStreet" value=${client.address} placeholder="Введите адрес клиента">
+            </div>
+            <div id="phoneIds">Телефоны</div>
+        `)
+
+        client.phones.forEach(phone => {
+            let htmlElement = document.getElementById("phoneIds");
+            htmlElement.insertAdjacentHTML('beforeend', `
+            <input type="text" id="${phone.id}" value="${phone.number}">
+            `)
+        })
+
+        let element = document.getElementById(`updateClient`)
+        element.insertAdjacentHTML('beforeend', `
+                <button onclick="updateClient(${id})">Обновить</button>
+                </div>
+            `);
+    }
+
+    async function addPhoneHtml(id) {
+        document.getElementById("addPhoneClientDiv").innerHTML = '<pre id="addPhoneClient"></pre>';
+        let elementById = document.getElementById("addPhoneClient");
+
+        elementById.insertAdjacentHTML('beforebegin', `
+        <div id="addPhoneClient"><p>Добавить номер клиента</p>
+            <input type="text" clientId="${id}" id="phonesIdsList" value="111-222"
+               placeholder="Введите номера телефонa">
+               <button onclick="addPhoneClient(${id})">добавить номер телефона</button>
+        </div>
+        `)
+    }
+
+    function addPhoneClient(id) {
+        const phonesIdPhoneListTextBox = document.getElementById('phonesIdsList');
+        const phonesValues = phonesIdPhoneListTextBox.value;
+        document.getElementById("addPhoneClientDiv").innerHTML = '<pre id="addPhoneClient"></pre>'
+
+        fetch('api/client/' + id, {
+            method: 'PUT',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                number: phonesValues,
+                clientId: id
+            })
+        })
+            .then(response => response.json())
+            .then(client => printInfo('Добавлен номер телефона: ' + JSON.stringify(client.phones, null, 4)))
+            .then(() => getAllClients());
+    }
+
+    function updateClient(id) {
+        const clientIdFirstNameTextBox = document.getElementById('updateClientIdFirstName');
+        const firstName = clientIdFirstNameTextBox.value;
+
+        const clientIdLastNameTextBox = document.getElementById('updateClientIdLastName');
+        const lastName = clientIdLastNameTextBox.value;
+
+        const addressIdStreetTextBox = document.getElementById('updateClientAddressIdStreet');
+        const address = addressIdStreetTextBox.value;
+
+        const phoneIds = document.getElementById('phoneIds');
+
+        const phones = [];
+        for (const child of phoneIds.children) {
+            let value = child.value
+            let id = child.id
+            phones.push(new Phone(id, value))
+        }
+
+
+        document.getElementById("updateClientDiv").innerHTML = '<pre id="updateClient"></pre>';
+
+        fetch('api/client/' + id, {
+            method: 'PATCH',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                id: id,
+                firstName: firstName,
+                lastName: lastName,
+                address: address,
+                phones: phones
+            })
+        })
+            .then(response => response.json())
+            .then(client => printInfo('Клиент обновлен: ' + JSON.stringify(client, null, 4)))
+            .then(() => getAllClients());
+    }
+
+    function printInfo(message) {
+        const clientDataContainer = document.getElementById('clientDataContainer');
+        clientDataContainer.innerHTML = message
+    }
+
+    function Phone(id, number) {
+        this.id = id
+        this.number = number
+    }
+
+</script>
+
+<div id="createClientDiv">
+    <pre id="createClient"></pre>
+</div>
+<div id="updateClientDiv">
+    <pre id="updateClient"></pre>
+</div>
+<div id="addPhoneClientDiv">
+    <pre id="addPhoneClient"></pre>
+</div>
+<br>
+<div class="clients" id="clients">
+    <div class="client" id="client${id}">
+        <button onclick="createClientHtml()">Создать нового клиента</button>
+        <table class="table-client">
+            <h2>Таблица клиентов</h2>
+            <thead>
+            <tr>
+                <th>Имя</th>
+                <th>Фамилия</th>
+                <th>Адрес</th>
+                <th>Номера телефонов</th>
+            </tr>
+            </thead>
+            <tbody id="table-row">
+
+            </tbody>
+        </table>
+    </div>
+</div>
+<div id="clientDataContainerDiv">
+    <pre id="clientDataContainer"></pre>
+</div>
+</body>
+</html>
